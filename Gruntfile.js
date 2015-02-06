@@ -339,7 +339,8 @@ module.exports = function (grunt) {
           expand: true,
           dot: true,
           cwd: '.',
-          src: 'bower_components/bootstrap-sass-official/assets/fonts/bootstrap/*',
+          // src: 'bower_components/bootstrap-sass-official/assets/fonts/bootstrap/*',
+          src: 'bower_components/zocial/css/zocial-regular-webfont*.*',
           dest: '<%= config.dist %>'
         }]
       },
