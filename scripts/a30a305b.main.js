@@ -25,10 +25,13 @@ hello.on('auth.login', function(auth){
 
   console.log('devo!');
 
+  console.log(auth.authResponse);
+
   AWS.config.credentials = new AWS.CognitoIdentityCredentials({
     IdentityPoolId: 'us-east-1:2229d0aa-09c2-450d-90da-9cae70b8260f',
     Logins: { // optional tokens, used for authenticated login
-      'accounts.google.com': auth.authResponse.access_token
+      // 'accounts.google.com': auth.authResponse.access_token
+      'accounts.google.com': auth.authResponse.id_token
     }
   });
 
