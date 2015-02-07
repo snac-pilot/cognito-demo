@@ -23,13 +23,15 @@ hello.on('auth.login', function(auth){
 
   AWS.config.region = 'us-east-1';
 
+  console.log(auth.authResponse.access_token);
+
   AWS.config.credentials = new AWS.CognitoIdentityCredentials({
     IdentityPoolId: 'us-east-1:2229d0aa-09c2-450d-90da-9cae70b8260f',
+    RoleArn: 'arn:aws:iam::563907706919:role/Cognito_SNACAuth_DefaultRole',
     Logins: { // optional tokens, used for authenticated login
       'accounts.google.com': auth.authResponse.access_token
     }
   });
-
 
   AWS.config.credentials.get(function() {
     console.log('Cognito Identity Id: ' + AWS.config.credentials.identityId);
