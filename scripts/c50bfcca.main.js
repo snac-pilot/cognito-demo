@@ -26,15 +26,15 @@ hello.on('auth.login', function(auth){
   console.log('devo!');
 
   AWS.config.credentials = new AWS.CognitoIdentityCredentials({
-    AccountId: '563907706919',
     IdentityPoolId: 'us-east-1:2229d0aa-09c2-450d-90da-9cae70b8260f',
-    RoleArn: 'arn:aws:iam::563907706919:role/Cognito_SNACAuth_DefaultRole',
     Logins: { // optional tokens, used for authenticated login
       'accounts.google.com': auth.authResponse.access_token
     }
   });
 
-  AWS.config.credentials.get(function() {
+  AWS.config.credentials.get(function(err) {
+    if (err) { console.log('credentials.get: '.red + err, err.stack); }
+    else {
     console.log('Cognito Identity Id: ' + AWS.config.credentials.identityId);
     // once we have the credentials we can initialize the
     // Cognito sync client
@@ -91,7 +91,7 @@ hello.on('auth.login', function(auth){
         }
       });
     });
-  });
+  }});
 
 });
 
