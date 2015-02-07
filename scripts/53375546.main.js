@@ -21,7 +21,7 @@ hello.on('auth.login', function(auth){
   AWS.config.credentials.get(function() {
     // once we have the credentials we can initialize the
     // Cognito sync client
-    cognitoSyncClient = new AWS.CognitoSyncManager();
+    cognitoSyncClient = new AWS.CognitoSync();
   });
 
 
