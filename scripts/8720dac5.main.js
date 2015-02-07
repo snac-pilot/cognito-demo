@@ -23,7 +23,7 @@ hello.on('auth.login', function(auth){
 
   AWS.config.region = 'us-east-1';
 
-  console.log(auth.authResponse.access_token);
+  console.log('devo');
 
   AWS.config.credentials = new AWS.CognitoIdentityCredentials({
     IdentityPoolId: 'us-east-1:2229d0aa-09c2-450d-90da-9cae70b8260f',
