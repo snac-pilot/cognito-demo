@@ -1,8 +1,10 @@
 'use strict';
 
-/* global hello */
 /* global AWS */
+/* global gapi */
+/* global jQuery */
 /* jshint camelcase: false */
+
 
 // a global variable for the sync client
 var cognitoSyncClient = {};
@@ -67,55 +69,47 @@ var cognitoTestApp = {
   }
 };
 
-hello.on('auth.login', function(auth){
-
-  // call user information, for the given network
-  hello( auth.network ).api( '/me' ).then( function(r){
-    // Inject it into the container
-    var label = document.getElementById( 'profile_'+ auth.network );
-    if(!label){
-      label = document.createElement('div');
-      label.id = 'profile_'+auth.network;
-      document.getElementById('profile').appendChild(label);
-    }
-    label.innerHTML = '<img src="'+ r.thumbnail +'" /> Hey '+r.name;
-  });
+var loginFinished = function(auth) {
 
   AWS.config.region = 'us-east-1';
 
   AWS.config.credentials = new AWS.CognitoIdentityCredentials({
     IdentityPoolId: 'us-east-1:2229d0aa-09c2-450d-90da-9cae70b8260f',
-    Logins: { // optional tokens, used for authenticated login
-      // 'accounts.google.com': auth.authResponse.access_token
-      'accounts.google.com': auth.authResponse.id_token
-    }
+    Logins: { 'accounts.google.com': auth.id_token }
   });
 
   AWS.config.credentials.get(function(err) {
     if (err) { console.log('credentials.get: '.red + err, err.stack); }
     else {
-    console.log('Cognito Identity Id: ' + AWS.config.credentials.identityId);
-    // once we have the credentials we can initialize the
-    // Cognito sync client
-    cognitoSyncClient = new AWS.CognitoSyncManager();
+      console.log('Cognito Identity Id: ' + AWS.config.credentials.identityId);
+      // once we have the credentials we can initialize the
+      // Cognito sync client
+      cognitoSyncClient = new AWS.CognitoSyncManager();
 
-    // first we use the sync client to open a Dataset
-    cognitoSyncClient.openOrCreateDataset('MyDataset', function(err, dataset) {
-      // now that we have a dataset we can read and write
-      // key/value pairs from it
-      dataset.get('MyKey', function(err, value) {
-        console.log(err, value);
-        if (! err) {
-          cognitoTestApp.testSetup(value, dataset);
-        }
+      // first we use the sync client to open a Dataset
+      cognitoSyncClient.openOrCreateDataset('MyDataset', function(err, dataset) {
+        // now that we have a dataset we can read and write
+        // key/value pairs from it
+        dataset.get('MyKey', function(err, value) {
+          console.log(err, value);
+          if (! err) {
+            cognitoTestApp.testSetup(value, dataset);
+          }
+        });
       });
+    }
+  });
 
+}; // end login finished
+
+jQuery( document ).ready(function( $ ) {
+  $('#login').click(function(){
+    gapi.auth.signIn({
+      'callback' : loginFinished,
+      'approvalprompt' : 'force',
+      'clientid' : '593494804152-2jt9r0j9c5qhi04das20f9am6tblh1rq.apps.googleusercontent.com',
+      'requestvisibleactions' : 'http://schema.org/AddAction',
+      'cookiepolicy' : 'single_host_origin'
     });
-  }});
-
+  });
 });
-
-
-hello.init({
-  google   : '593494804152-2jt9r0j9c5qhi04das20f9am6tblh1rq.apps.googleusercontent.com'
-},{redirect_uri:'http://snac-pilot.github.io/cognito-demo/'});
