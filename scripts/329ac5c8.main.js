@@ -9,6 +9,18 @@ var cognitoSyncClient = {};
 
 hello.on('auth.login', function(auth){
 
+  // call user information, for the given network
+  hello( auth.network ).api( '/me' ).then( function(r){
+    // Inject it into the container
+    var label = document.getElementById( 'profile_'+ auth.network );
+    if(!label){
+      label = document.createElement('div');
+      label.id = 'profile_'+auth.network;
+      document.getElementById('profile').appendChild(label);
+    }
+    label.innerHTML = '<img src="'+ r.thumbnail +'" /> Hey '+r.name;
+  });
+
   AWS.config.region = 'us-east-1';
 
   AWS.config.credentials = new AWS.CognitoIdentityCredentials({
@@ -22,21 +34,6 @@ hello.on('auth.login', function(auth){
     // once we have the credentials we can initialize the
     // Cognito sync client
     cognitoSyncClient = new AWS.CognitoSyncManager();
-  });
-
-
-  // call user information, for the given network
-  hello( auth.network ).api( '/me' ).then( function(r){
-    // Inject it into the container
-    var label = document.getElementById( 'profile_'+ auth.network );
-    if(!label){
-      label = document.createElement('div');
-      label.id = 'profile_'+auth.network;
-      document.getElementById('profile').appendChild(label);
-    }
-    label.innerHTML = '<img src="'+ r.thumbnail +'" /> Hey '+r.name;
-  });
-
 
   // first we use the sync client to open a Dataset
   cognitoSyncClient.openOrCreateDataset('MyDataset', function(err, dataset) {
@@ -88,6 +85,7 @@ hello.on('auth.login', function(auth){
         });
       }
     });
+  });
   });
 
 });
