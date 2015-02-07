@@ -69,13 +69,37 @@ var cognitoTestApp = {
   }
 };
 
-var loginFinished = function(auth) {
+
+function toggleDiv(id) {
+  var div = document.getElementById(id);
+  if (div.getAttribute('class') === 'hide') {
+    div.setAttribute('class', 'show');
+  } else {
+    div.setAttribute('class', 'hide');
+  }
+}
+
+
+var loginFinished = function(authResult) {
+if (authResult) {
+  console.log(authResult);
+
+  var el = document.getElementById('oauth2-results');
+  var label = '';
+  toggleDiv('oauth2-results');
+  if (authResult.status.signed_in) {
+    label = 'User granted access:';
+    gapi.auth.setToken(authResult);
+  } else {
+    label = 'Access denied: ' + authResult.error;
+  }
+  el.innerHtml = label;
 
   AWS.config.region = 'us-east-1';
 
   AWS.config.credentials = new AWS.CognitoIdentityCredentials({
     IdentityPoolId: 'us-east-1:2229d0aa-09c2-450d-90da-9cae70b8260f',
-    Logins: { 'accounts.google.com': auth.id_token }
+    Logins: { 'accounts.google.com': authResult.id_token }
   });
 
   AWS.config.credentials.get(function(err) {
@@ -100,10 +124,11 @@ var loginFinished = function(auth) {
     }
   });
 
-}; // end login finished
+}}; // end login finished
 
 jQuery( document ).ready(function( $ ) {
   $('#login').click(function(){
+    $( this ).hide();
     gapi.auth.signIn({
       'callback' : loginFinished,
       'approvalprompt' : 'force',
