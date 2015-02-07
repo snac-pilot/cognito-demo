@@ -23,9 +23,10 @@ hello.on('auth.login', function(auth){
 
   AWS.config.region = 'us-east-1';
 
-  console.log('devo');
+  console.log('devo!');
 
   AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+    AccountId: '563907706919',
     IdentityPoolId: 'us-east-1:2229d0aa-09c2-450d-90da-9cae70b8260f',
     RoleArn: 'arn:aws:iam::563907706919:role/Cognito_SNACAuth_DefaultRole',
     Logins: { // optional tokens, used for authenticated login
