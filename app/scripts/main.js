@@ -7,6 +7,66 @@
 // a global variable for the sync client
 var cognitoSyncClient = {};
 
+var cognitoTestApp = {
+  callbacks: { /* jshint unused: false */
+    onSuccess: function(dataset, newRecords) {
+      console.log(dataset, newRecords);
+      console.log('data saved to the cloud and newRecords received');
+    },
+    onFailure: function(err) {
+      console.log('Error while synchronizing data to the cloud: ' + err);
+    },
+    onConflict: function(dataset, conflicts, callback) {
+      var resolved = [];
+      for (var i=0; i < conflicts.length; i++) {
+        // Take remote version.
+        resolved.push(conflicts[i].resolveWithRemoteRecord());
+      }
+      dataset.resolve(resolved, function(err) {
+        if ( !err ) { callback(true); }
+      });
+    },
+    onDatasetDeleted: function(dataset, datasetName, callback) {
+      return callback(true);
+    },
+    onDatasetMerged: function(dataset, datasetNames, callback) {
+      // Return false to handle dataset merges outside the synchroniziation callback.
+      return callback(false);
+    }
+  },
+  // cognitoTestApp.testSetup
+  testSetup: function(value, dataset) {
+    console.log(value, dataset);
+    console.log($('#test'));
+
+    // apply any saved updates
+    if (value) {
+      $('#test').html(value);
+    }
+    //
+    // http://stackoverflow.com/a/20699971/1763984
+    $('#test').focus(function() {
+        $(this).data('initialText', $(this).html());
+    }).blur(function() {
+      // ...if content is different...
+      if ($(this).data('initialText') !== $(this).html()) {
+        // ... do something.
+        console.log('New data when content change.');
+        dataset.put('MyKey', JSON.stringify($(this).html()), function(err, record) {
+          console.log(err, record);
+          // if there were no errors we can synchronize this data
+          // to push it to the cloud sync store
+          if ( !err ) {
+            // do stuff
+            console.log(cognitoTestApp.callbacks);
+            dataset.synchronize(cognitoTestApp.callbacks);
+          }
+        });
+      }
+    });
+  }
+};
+
 hello.on('auth.login', function(auth){
 
   // call user information, for the given network
@@ -22,10 +82,6 @@ hello.on('auth.login', function(auth){
   });
 
   AWS.config.region = 'us-east-1';
-
-  console.log('devo!');
-
-  console.log(auth.authResponse);
 
   AWS.config.credentials = new AWS.CognitoIdentityCredentials({
     IdentityPoolId: 'us-east-1:2229d0aa-09c2-450d-90da-9cae70b8260f',
@@ -49,50 +105,11 @@ hello.on('auth.login', function(auth){
       // key/value pairs from it
       dataset.get('MyKey', function(err, value) {
         console.log(err, value);
-      });
-
-      dataset.put('MyKey', JSON.stringify({'test': 'test'}), function(err, record) {
-        console.log(err, record);
-        // if there were no errors we can synchronize this data
-        // to push it to the cloud sync store
-        if ( !err ) {
-          dataset.synchronize({
-            /* jshint unused: false */
-            onSuccess: function(dataset, newRecords) {
-              console.log(dataset, newRecords);
-              console.log('data saved to the cloud and newRecords received');
-            },
-            onFailure: function(err) {
-              console.log('Error while synchronizing data to the cloud: ' + err);
-            },
-            onConflict: function(dataset, conflicts, callback) {
-
-              // if there are conflicts during the synchronization
-              // we can resolve them in this method
-              var resolved = [];
-
-              for (var i=0; i < conflicts.length; i++) {
-                // Take remote version.
-                resolved.push(conflicts[i].resolveWithRemoteRecord());
-              }
-
-              dataset.resolve(resolved, function(err) {
-                if ( !err ) { callback(true); }
-              });
-
-            },
-            onDatasetDeleted: function(dataset, datasetName, callback) {
-              // Return true to delete the local copy of the dataset.
-              return callback(true);
-            },
-            onDatasetMerged: function(dataset, datasetNames, callback) {
-              // Return false to handle dataset merges outside the synchroniziation callback.
-              return callback(false);
-            },
-
-          });
+        if (! err) {
+          cognitoTestApp.testSetup(value, dataset);
         }
       });
+
     });
   }});
 
