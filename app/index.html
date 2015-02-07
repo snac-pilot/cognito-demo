@@ -39,6 +39,8 @@
 
       <a href="#" onclick="hello( 'google' ).login()" class="zocial googleplus">Sign in with Google+</a>
 
+      <div id="profile_google"></div>
+
       <div class="footer">
 
       </div>
@@ -64,17 +66,18 @@
     <script src="bower_components/hello/dist/hello.all.min.js"></script>
     <script src="bower_components/aws-sdk-js/dist/aws-sdk.js"></script>
     <!-- endbower -->
+    <script src="bower_components/amazon-cognito-js/dist/amazon-cognito.min.js"></script>
     <!-- endbuild -->
 
     <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
-    <script>
+    <!-- script>
       (function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
       function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
       e=o.createElement(i);r=o.getElementsByTagName(i)[0];
       e.src='//www.google-analytics.com/analytics.js';
       r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
       ga('create','UA-XXXXX-X');ga('send','pageview');
-    </script>
+    </script -->
 
         <!-- build:js({app,.tmp}) scripts/main.js -->
         <script src="scripts/main.js"></script>
