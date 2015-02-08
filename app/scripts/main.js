@@ -1,20 +1,50 @@
 'use strict';
-
 /* global AWS */
 /* global hello */
 /* global jQuery */
 /* jshint camelcase: false */
 
-
 // a global variable for the sync client
 var cognitoSyncClient = {};
 
+// namespace to hold
+// cognitoTestApp.syncCallbacks -- callbacks for cognito sync
+//
 var cognitoTestApp = {
+  // cognitoTestApp.updater
+  updater: function(content, dataset) {
+    // apply any saved updates
+    if (content) {
+      $('#test').html(content);
+    }
+    // trigger an event when contenteditable is changed
+    // http://stackoverflow.com/a/20699971/1763984
+    $('#test').focus(function() {
+        $(this).data('initialText', $(this).html());
+    }).blur(function() {
+      // ...if content is different...
+      if ($(this).data('initialText') !== $(this).html()) {
+        // ... do something.
+        console.log('New data when content change.');
+        console.log( $(this).html() );
+        dataset.put('MyKey', $(this).html(), function(err, record) {
+          console.log('record');
+          console.log(record);
+          // if there were no errors we can synchronize this data
+          // to push it to the cloud sync store
+          if ( !err ) {
+            // do stuff
+          }
+        });
+        dataset.synchronize(cognitoTestApp.syncCallbacks);
+      }
+    });
+  },
   // cognitoTestApp.syncCallbacks
   syncCallbacks: { /* jshint unused: false */
     onSuccess: function(dataset, newRecords) {
+      console.log('data saved to the cloud and newRecords received.');
       console.log(dataset, newRecords);
-      console.log('data saved to the cloud and newRecords received');
     },
     onFailure: function(err) {
       console.log('Error while synchronizing data to the cloud: ' + err);
@@ -36,44 +66,15 @@ var cognitoTestApp = {
       // Return false to handle dataset merges outside the synchroniziation callback.
       return callback(false);
     }
-  },
-  // cognitoTestApp.testSetup
-  testSetup: function(content, dataset) {
-    // apply any saved updates
-    if (content) {
-      $('#test').html(content);
-    }
-    // trigger an event when contenteditable is changed
-    // http://stackoverflow.com/a/20699971/1763984
-    $('#test').focus(function() {
-        $(this).data('initialText', $(this).html());
-    }).blur(function() {
-      // ...if content is different...
-      if ($(this).data('initialText') !== $(this).html()) {
-        // ... do something.
-        console.log('New data when content change.');
-        dataset.put('MyKey', JSON.stringify($(this).html()), function(err, record) {
-          // if there were no errors we can synchronize this data
-          // to push it to the cloud sync store
-          if ( !err ) {
-            // do stuff
-            dataset.synchronize(cognitoTestApp.syncCallbacks);
-          }
-        });
-      }
-    });
   }
 };
 
-
 hello.on('auth.login', function(auth){
-
   // update the UI
   $('#login').hide();
   hello( auth.network ).api( '/me' ).then( function(r){
     $('#user_info').html('<img src="'+ r.thumbnail +'" /> Hey '+r.name);
   });
-
   // AWS config
   AWS.config.region = 'us-east-1';
   AWS.config.credentials = new AWS.CognitoIdentityCredentials({
@@ -92,7 +93,7 @@ hello.on('auth.login', function(auth){
           dataset.get('MyKey', function(err, content) {
             if (! err) {
               // `content` is the payload from cognito
-              cognitoTestApp.testSetup(content, dataset);
+              cognitoTestApp.updater(content, dataset);
             }
           });
         }
@@ -103,9 +104,7 @@ hello.on('auth.login', function(auth){
 
 jQuery( document ).ready(function( $ ) {
   $('#login').click(function(){
-    hello( 'google' ).login({
-      response_type : 'code'
-    });
+    hello('google').login({ response_type : 'code' });
   });
 });
 
