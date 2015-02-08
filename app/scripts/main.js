@@ -7,41 +7,56 @@
 // a global variable for the sync client
 var cognitoSyncClient = {};
 
-// namespace to hold
-// cognitoTestApp.syncCallbacks -- callbacks for cognito sync
-//
+// global for debug
+var debugGlobal = {
+  'dataset': null
+};
+
+/*namespace to hold some application logic
+  cognitoTestApp.*
+*/
 var cognitoTestApp = {
-  // cognitoTestApp.updater
-  updater: function(content, dataset) {
-    dataset.synchronize(cognitoTestApp.syncCallbacks);
-    // apply any saved updates
+  /* cognitoTestApp.setup(content, dataset)
+   *  setup the edit area
+   */
+  setup: function(content, dataset) {
+    // data from cognito
+    console.log(content);
+
+    // sync up changes from the cloud
+    // dataset.synchronize(cognitoTestApp.syncCallbacks);
+    // do we need custom callbacks for the demo?
+    dataset.synchronize();
+
+    // apply any saved updates to the local editable area
     if (content) {
       $('#test').html(content);
     }
+
+    // bind to the editable text area
     // trigger an event when contenteditable is changed
     // http://stackoverflow.com/a/20699971/1763984
+    // THIS IS A MESS
     $('#test').focus(function() {
         $(this).data('initialText', $(this).html());
     }).blur(function() {
-      // ...if content is different...
+      // ...if user changed div content...
       if ($(this).data('initialText') !== $(this).html()) {
-        // ... do something.
-        console.log('New data when content change.');
-        console.log( $(this).html() );
-        dataset.put('MyKey', $(this).html(), function(err, record) {
-          console.log('record');
-          console.log(record);
-          // if there were no errors we can synchronize this data
-          // to push it to the cloud sync store
+        // save user edits
+        dataset.put('MyKey', $(this).html(), function(err) {
           if ( !err ) {
-            // do stuff
+            // sync with cloud
+            dataset.synchronize(cognitoTestApp.syncCallbacks);
           }
         });
-        dataset.synchronize(cognitoTestApp.syncCallbacks);
       }
     });
-  },
-  // cognitoTestApp.syncCallbacks
+    debugGlobal.dataset = dataset;
+  }, // end cognitoTestApp.setup
+
+  /* cognitoTestApp.syncCallbacks
+   *   callbacks to pass to dataset.syncronize
+   */
   syncCallbacks: { /* jshint unused: false */
     onSuccess: function(dataset, newRecords) {
       console.log('data saved to the cloud and newRecords received.');
@@ -70,19 +85,27 @@ var cognitoTestApp = {
   }
 };
 
+// bind to hello's auth.login event, fires when logged in okay
 hello.on('auth.login', function(auth){
-  // update the UI
+
+  // update the UI based on being logged in
   $('#login').hide();
+  // lookup user profile info from the identity provider
   hello( auth.network ).api( '/me' ).then( function(r){
+    // inject user info
     $('#user_info').html('<img src="'+ r.thumbnail +'" /> Hey '+r.name);
   });
+
   // AWS config
   AWS.config.region = 'us-east-1';
+  AWS.config.logger = console;
   AWS.config.credentials = new AWS.CognitoIdentityCredentials({
     IdentityPoolId: 'us-east-1:2229d0aa-09c2-450d-90da-9cae70b8260f',
     Logins: { 'accounts.google.com': auth.authResponse.id_token }
   });
-  // get AWS credentials
+
+  // get AWS credentials, so we can connect
+  // TOO DEEP,
   AWS.config.credentials.get(function(err) {
     if (err) { console.log('credentials.get: '.red + err, err.stack); }
     else {
@@ -92,9 +115,9 @@ hello.on('auth.login', function(auth){
         // `dataset` is in cognito
         if (! err) {
           dataset.get('MyKey', function(err, content) {
+            // `content` is the payload from cognito
             if (! err) {
-              // `content` is the payload from cognito
-              cognitoTestApp.updater(content, dataset);
+              cognitoTestApp.setup(content, dataset);
             }
           });
         }
@@ -103,7 +126,9 @@ hello.on('auth.login', function(auth){
   });
 }); // end hello.on `auth.login`
 
+// when the document is ready
 jQuery( document ).ready(function( $ ) {
+  // bind login action to login button
   $('#login').click(function(){
     hello('google').login({ response_type : 'code' });
   });
