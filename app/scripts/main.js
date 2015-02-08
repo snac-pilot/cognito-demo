@@ -119,7 +119,7 @@ jQuery( document ).ready(function( $ ) {
 hello.init({
   google   : '593494804152-2jt9r0j9c5qhi04das20f9am6tblh1rq.apps.googleusercontent.com'
 },{
-  redirect_uri:'http://localhost:9000/'
+  redirect_uri: window.location.href
 });
 
 hello.on('auth.login', function(auth){
