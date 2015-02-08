@@ -6,6 +6,6 @@
     "modernizr": "~2.8.2",
     "aws-sdk-js": "~2.1.8",
     "zocial": "*",
-    "amazon-cognito-js": "https://github.com/aws/amazon-cognito-js.git#~1.0.0"
+    "amazon-cognito-js": "https://github.com/tingletech/amazon-cognito-js.git#patch-1"
   }
 }

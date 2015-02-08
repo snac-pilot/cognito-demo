@@ -111,15 +111,17 @@ if (authResult) {
       cognitoSyncClient = new AWS.CognitoSyncManager();
 
       // first we use the sync client to open a Dataset
-      cognitoSyncClient.openOrCreateDataset('MyDataset', function(err, dataset) {
-        // now that we have a dataset we can read and write
-        // key/value pairs from it
-        dataset.get('MyKey', function(err, value) {
-          console.log(err, value);
-          if (! err) {
-            cognitoTestApp.testSetup(value, dataset);
-          }
-        });
+
+      cognitoSyncClient.openOrCreateDataset('MYDataset', function(err, dataset) {
+        if (! err) {
+          // now that we have a dataset we can read and write
+          // key/value pairs from it
+          dataset.get('MyKey', function(err, value) {
+            if (! err) {
+              cognitoTestApp.testSetup(value, dataset);
+            }
+          });
+        }
       });
     }
   });
