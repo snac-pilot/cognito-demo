@@ -10,7 +10,8 @@
 var cognitoSyncClient = {};
 
 var cognitoTestApp = {
-  callbacks: { /* jshint unused: false */
+  // cognitoTestApp.syncCallbacks
+  syncCallbacks: { /* jshint unused: false */
     onSuccess: function(dataset, newRecords) {
       console.log(dataset, newRecords);
       console.log('data saved to the cloud and newRecords received');
@@ -38,14 +39,11 @@ var cognitoTestApp = {
   },
   // cognitoTestApp.testSetup
   testSetup: function(value, dataset) {
-    console.log(value, dataset);
-    console.log($('#test'));
-
     // apply any saved updates
     if (value) {
       $('#test').html(value);
     }
-    //
+    // trigger an event when contenteditable is changed
     // http://stackoverflow.com/a/20699971/1763984
     $('#test').focus(function() {
         $(this).data('initialText', $(this).html());
@@ -55,13 +53,11 @@ var cognitoTestApp = {
         // ... do something.
         console.log('New data when content change.');
         dataset.put('MyKey', JSON.stringify($(this).html()), function(err, record) {
-          console.log(err, record);
           // if there were no errors we can synchronize this data
           // to push it to the cloud sync store
           if ( !err ) {
             // do stuff
-            console.log(cognitoTestApp.callbacks);
-            dataset.synchronize(cognitoTestApp.callbacks);
+            dataset.synchronize(cognitoTestApp.syncCallbacks);
           }
         });
       }
@@ -70,30 +66,18 @@ var cognitoTestApp = {
 };
 
 
-function toggleDiv(id) {
-  var div = document.getElementById(id);
-  if (div.getAttribute('class') === 'hide') {
-    div.setAttribute('class', 'show');
-  } else {
-    div.setAttribute('class', 'hide');
-  }
-}
-
-
 var loginFinished = function(authResult) {
 if (authResult) {
-  console.log(authResult);
-
   var el = document.getElementById('oauth2-results');
   var label = '';
-  toggleDiv('oauth2-results');
   if (authResult.status.signed_in) {
     label = 'User granted access:';
+    $('#startFlow').hide();
     gapi.auth.setToken(authResult);
   } else {
     label = 'Access denied: ' + authResult.error;
   }
-  el.innerHtml = label;
+  el.innerHTML = label;
 
   AWS.config.region = 'us-east-1';
 
@@ -130,7 +114,6 @@ if (authResult) {
 
 jQuery( document ).ready(function( $ ) {
   $('#login').click(function(){
-    $( this ).hide();
     gapi.auth.signIn({
       'callback' : loginFinished,
       'approvalprompt' : 'force',
