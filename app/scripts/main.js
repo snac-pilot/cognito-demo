@@ -16,6 +16,19 @@ var debugGlobal = {
   cognitoTestApp.*
 */
 var cognitoTestApp = {
+  /* cognitoTestApp.syncBack(dataset, content)
+   *  sync to cloud and copy back to div
+   */
+  syncBack: function(dataset, content){
+    // sync up changes from the cloud
+    // dataset.synchronize(cognitoTestApp.syncCallbacks);
+    // do we need custom callbacks for the demo?
+    dataset.synchronize();
+    // apply any saved updates to the local editable area
+    if (content) {
+      $('#test').html(content);
+    }
+  },
   /* cognitoTestApp.setup(content, dataset)
    *  setup the edit area
    */
@@ -23,15 +36,7 @@ var cognitoTestApp = {
     // data from cognito
     console.log(content);
 
-    // sync up changes from the cloud
-    // dataset.synchronize(cognitoTestApp.syncCallbacks);
-    // do we need custom callbacks for the demo?
-    dataset.synchronize();
-
-    // apply any saved updates to the local editable area
-    if (content) {
-      $('#test').html(content);
-    }
+    cognitoTestApp.syncBack(dataset, content);
 
     // bind to the editable text area
     // trigger an event when contenteditable is changed
@@ -43,10 +48,9 @@ var cognitoTestApp = {
       // ...if user changed div content...
       if ($(this).data('initialText') !== $(this).html()) {
         // save user edits
-        dataset.put('MyKey', $(this).html(), function(err) {
+        dataset.put('MyKey', $(this).html(), function(err, record) {
           if ( !err ) {
-            // sync with cloud
-            dataset.synchronize(cognitoTestApp.syncCallbacks);
+            cognitoTestApp.syncBack(dataset, record.value);
           }
         });
       }
