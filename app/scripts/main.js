@@ -13,6 +13,7 @@ var cognitoSyncClient = {};
 var cognitoTestApp = {
   // cognitoTestApp.updater
   updater: function(content, dataset) {
+    dataset.synchronize(cognitoTestApp.syncCallbacks);
     // apply any saved updates
     if (content) {
       $('#test').html(content);
