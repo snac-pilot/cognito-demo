@@ -38,10 +38,10 @@ var cognitoTestApp = {
     }
   },
   // cognitoTestApp.testSetup
-  testSetup: function(value, dataset) {
+  testSetup: function(content, dataset) {
     // apply any saved updates
-    if (value) {
-      $('#test').html(value);
+    if (content) {
+      $('#test').html(content);
     }
     // trigger an event when contenteditable is changed
     // http://stackoverflow.com/a/20699971/1763984
@@ -66,47 +66,40 @@ var cognitoTestApp = {
 };
 
 
-var loginFinished = function(auth) {
-if (auth) {
+hello.on('auth.login', function(auth){
 
+  // update the UI
   $('#login').hide();
-
   hello( auth.network ).api( '/me' ).then( function(r){
     $('#user_info').html('<img src="'+ r.thumbnail +'" /> Hey '+r.name);
   });
 
+  // AWS config
   AWS.config.region = 'us-east-1';
   AWS.config.credentials = new AWS.CognitoIdentityCredentials({
     IdentityPoolId: 'us-east-1:2229d0aa-09c2-450d-90da-9cae70b8260f',
     Logins: { 'accounts.google.com': auth.authResponse.id_token }
   });
-
+  // get AWS credentials
   AWS.config.credentials.get(function(err) {
     if (err) { console.log('credentials.get: '.red + err, err.stack); }
     else {
-      console.log('Cognito Identity Id: ' + AWS.config.credentials.identityId);
-      // once we have the credentials we can initialize the
-      // Cognito sync client
+      // connect to cognito
       cognitoSyncClient = new AWS.CognitoSyncManager();
-
-      // first we use the sync client to open a Dataset
-
       cognitoSyncClient.openOrCreateDataset('MYDataset', function(err, dataset) {
+        // `dataset` is in cognito
         if (! err) {
-          // now that we have a dataset we can read and write
-          // key/value pairs from it
-          console.log(dataset);
-          dataset.get('MyKey', function(err, value) {
+          dataset.get('MyKey', function(err, content) {
             if (! err) {
-              cognitoTestApp.testSetup(value, dataset);
+              // `content` is the payload from cognito
+              cognitoTestApp.testSetup(content, dataset);
             }
           });
         }
       });
     }
   });
-
-}}; // end login finished
+}); // end hello.on `auth.login`
 
 jQuery( document ).ready(function( $ ) {
   $('#login').click(function(){
@@ -121,9 +114,3 @@ hello.init({
 },{
   redirect_uri: window.location.href
 });
-
-hello.on('auth.login', function(auth){
-  loginFinished(auth);
-});
-
-
