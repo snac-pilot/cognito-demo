@@ -59,13 +59,6 @@ var cognitoTestApp = {
    *   callbacks to pass to dataset.syncronize
    */
   syncCallbacks: { /* jshint unused: false */
-    onSuccess: function(dataset, newRecords) {
-      console.log('data saved to the cloud and newRecords received.');
-      console.log(dataset, newRecords);
-    },
-    onFailure: function(err) {
-      console.log('Error while synchronizing data to the cloud: ' + err);
-    },
     onConflict: function(dataset, conflicts, callback) {
       var resolved = [];
       for (var i=0; i < conflicts.length; i++) {
@@ -76,13 +69,6 @@ var cognitoTestApp = {
         if ( !err ) { callback(true); }
       });
     },
-    onDatasetDeleted: function(dataset, datasetName, callback) {
-      return callback(true);
-    },
-    onDatasetMerged: function(dataset, datasetNames, callback) {
-      // Return false to handle dataset merges outside the synchroniziation callback.
-      return callback(false);
-    }
   }
 };
 
