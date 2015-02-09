@@ -92,14 +92,14 @@ hello.on('auth.login', function(auth){
   });
 
   // get AWS credentials, so we can connect
-  Promise.promisifyAll(Object.getPrototypeOf(AWS.config.credentials));
+  Promise.promisifyAll(AWS.config.credentials);
   AWS.config.credentials.getAsync().then(function() {
-    // connect to cognito
+    // connect to cognito (localStorage/cloud hybrid)
     cognitoSyncClient = new AWS.CognitoSyncManager();
-    Promise.promisifyAll(Object.getPrototypeOf(cognitoSyncClient));
+    Promise.promisifyAll(cognitoSyncClient);
     return cognitoSyncClient.openOrCreateDatasetAsync('MYDataset');
   }).then(function (dataset) {
-    Promise.promisifyAll(Object.getPrototypeOf(dataset));
+    Promise.promisifyAll(dataset);
     return {
       content: dataset.getAsync('MyKey'),
       dataset: dataset
