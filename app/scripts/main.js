@@ -1,19 +1,23 @@
 'use strict';
+/* "imports" are managed with bower for now
+ *    migrate to http://browserify.org ?
+ */
 /* global AWS */
 /* global hello */
 /* global jQuery */
+// aws API returns snake
 /* jshint camelcase: false */
 
 // a global variable for the sync client
 var cognitoSyncClient = {};
 
-// global for debug
+// global for debug (move to app's global object)
 var debugGlobal = {
   'dataset': null
 };
 
-/*namespace to hold some application logic
-  cognitoTestApp.*
+/* cognitoTestApp.*
+    namespace global object to hold some application logic
 */
 var cognitoTestApp = {
   /* cognitoTestApp.syncBack(dataset, content)
@@ -59,6 +63,8 @@ var cognitoTestApp = {
    *   callbacks to pass to dataset.syncronize
    */
   syncCallbacks: { /* jshint unused: false */
+    // conflict resolution options touched on here:
+    //  https://github.com/aws/amazon-cognito-js
     onConflict: function(dataset, conflicts, callback) {
       var resolved = [];
       for (var i=0; i < conflicts.length; i++) {
@@ -68,13 +74,12 @@ var cognitoTestApp = {
       dataset.resolve(resolved, function(err) {
         if ( !err ) { callback(true); }
       });
-    },
+    }
   }
-};
+}; // end cognitoTestApp
 
 // bind to hello's auth.login event, fires when logged in okay
 hello.on('auth.login', function(auth){
-
   // update the UI based on being logged in
   $('#login').hide();
   // lookup user profile info from the identity provider
