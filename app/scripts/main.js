@@ -109,24 +109,19 @@ hello.on('auth.login', function(auth){
   });
 
   // get AWS credentials, so we can connect
-  // TOO DEEP,
-  AWS.config.credentials.get(function(err) {
-    if (err) { console.log('credentials.get: '.red + err, err.stack); }
-    else {
-      // connect to cognito
-      cognitoSyncClient = new AWS.CognitoSyncManager();
-      cognitoSyncClient.openOrCreateDataset('MYDataset', function(err, dataset) {
-        // `dataset` is in cognito
-        if (! err) {
-          dataset.get('MyKey', function(err, content) {
-            // `content` is the payload from cognito
-            if (! err) {
-              cognitoTestApp.setup(content, dataset);
-            }
-          });
-        }
-      });
-    }
+  Promise.promisifyAll(Object.getPrototypeOf(AWS.config.credentials));
+  AWS.config.credentials.getAsync().then(function() {
+    // connect to cognito
+    cognitoSyncClient = new AWS.CognitoSyncManager();
+    Promise.promisifyAll(Object.getPrototypeOf(cognitoSyncClient));
+    cognitoSyncClient.openOrCreateDatasetAsync('MYDataset').then(function (dataset) {
+      Promise.promisifyAll(Object.getPrototypeOf(dataset));
+      // `dataset` is in cognito
+      dataset.getAsync('MyKey').then(function (content) {
+        // `content` is the payload from cognito
+        cognitoTestApp.setup(content, dataset);
+      }).done();
+    }).done();
   });
 }); // end hello.on `auth.login`
 
