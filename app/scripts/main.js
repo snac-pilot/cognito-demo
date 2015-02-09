@@ -41,18 +41,15 @@ var cognitoTestApp = {
     // bind to the editable text area
     // trigger an event when contenteditable is changed
     // http://stackoverflow.com/a/20699971/1763984
-    // THIS IS A MESS
     $('#test').focus(function() {
         $(this).data('initialText', $(this).html());
     }).blur(function() {
       // ...if user changed div content...
       if ($(this).data('initialText') !== $(this).html()) {
         // save user edits
-        dataset.put('MyKey', $(this).html(), function(err, record) {
-          if ( !err ) {
-            cognitoTestApp.syncBack(dataset, record.value);
-          }
-        });
+        dataset.putAsync('MyKey', $(this).html()).then(function(err, record) {
+          cognitoTestApp.syncBack(dataset, record.value);
+        }).done();
       }
     });
     debugGlobal.dataset = dataset;
@@ -114,15 +111,16 @@ hello.on('auth.login', function(auth){
     // connect to cognito
     cognitoSyncClient = new AWS.CognitoSyncManager();
     Promise.promisifyAll(Object.getPrototypeOf(cognitoSyncClient));
-    cognitoSyncClient.openOrCreateDatasetAsync('MYDataset').then(function (dataset) {
-      Promise.promisifyAll(Object.getPrototypeOf(dataset));
-      // `dataset` is in cognito
-      dataset.getAsync('MyKey').then(function (content) {
-        // `content` is the payload from cognito
-        cognitoTestApp.setup(content, dataset);
-      }).done();
-    }).done();
-  });
+    return cognitoSyncClient.openOrCreateDatasetAsync('MYDataset');
+  }).then(function (dataset) {
+    Promise.promisifyAll(Object.getPrototypeOf(dataset));
+    return {
+      content: dataset.getAsync('MyKey'),
+      dataset: dataset
+    };
+  }).then(function (params) {
+      cognitoTestApp.setup(params.content.value(), params.dataset);
+  }).done();
 }); // end hello.on `auth.login`
 
 // when the document is ready
