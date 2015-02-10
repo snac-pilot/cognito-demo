@@ -126,12 +126,8 @@ hello.on('auth.login', function(auth){
     return cognitoSyncClient.openOrCreateDatasetAsync('MYDataset');
   }).then(function (dataset) {
     Promise.promisifyAll(dataset);
-    return {
-      content: dataset.getAsync('MyKey'),
-      dataset: dataset
-    };
-  }).then(function (params) {
-      cognitoTestApp.setup(params.content.value(), params.dataset);
+    var content = dataset.getAsync('MyKey').value();
+    cognitoTestApp.setup(content, dataset);
   }).done();
 }); // end hello.on `auth.login`
 
