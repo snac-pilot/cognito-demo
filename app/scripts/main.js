@@ -20,18 +20,38 @@ var debugGlobal = {
     namespace global object to hold some application logic
 */
 var cognitoTestApp = {
-  /* cognitoTestApp.syncBack(dataset, content)
+  /* cognitoTestApp.syncBack(dataset)
    *  sync to cloud and copy back to div
    */
-  syncBack: function(dataset, content){
+  syncBack: function(dataset){
     // sync up changes from the cloud
-    // dataset.synchronize(cognitoTestApp.syncCallbacks);
-    // do we need custom callbacks for the demo?
-    dataset.synchronize();
-    // apply any saved updates to the local editable area
-    if (content) {
-      $('#test').html(content);
-    }
+    dataset.synchronize({
+      onSuccess: function(dataset) {
+        var content = dataset.getAsync('MyKey').value();
+        // apply any saved updates to the local editable area
+        if (content) {
+          $('#test').html(content);
+        }
+      },
+      // add both together if there is a conflict
+      onConflict: function(dataset, conflicts, callback) {
+        var resolved = [];
+        for (var i=0; i<conflicts.length; i++) {
+          var remoteValue = conflicts[i].getRemoteRecord().value;
+          var localValue = conflicts[i].getLocalRecord().value;
+          if (remoteValue !== localValue) {
+            resolved.push(conflicts[i].resolveWithValue(
+              remoteValue + '\n---\n' + localValue
+            ));
+          } else {
+            resolved.push(conflicts[i].resolveWithLocalRecord());
+          }
+        }
+        dataset.resolve(resolved, function() {
+          return callback(true);
+        });
+      }
+    });
   },
   /* cognitoTestApp.setup(content, dataset)
    *  setup the edit area
@@ -51,31 +71,13 @@ var cognitoTestApp = {
       // ...if user changed div content...
       if ($(this).data('initialText') !== $(this).html()) {
         // save user edits
-        dataset.putAsync('MyKey', $(this).html()).then(function(err, record) {
+        dataset.putAsync('MyKey', $(this).html()).then(function(record) {
           cognitoTestApp.syncBack(dataset, record.value);
         }).done();
       }
     });
     debugGlobal.dataset = dataset;
-  }, // end cognitoTestApp.setup
-
-  /* cognitoTestApp.syncCallbacks
-   *   callbacks to pass to dataset.syncronize
-   */
-  syncCallbacks: { /* jshint unused: false */
-    // conflict resolution options touched on here:
-    //  https://github.com/aws/amazon-cognito-js
-    onConflict: function(dataset, conflicts, callback) {
-      var resolved = [];
-      for (var i=0; i < conflicts.length; i++) {
-        // Take remote version.
-        resolved.push(conflicts[i].resolveWithRemoteRecord());
-      }
-      dataset.resolve(resolved, function(err) {
-        if ( !err ) { callback(true); }
-      });
-    }
-  }
+  } // end cognitoTestApp.setup
 }; // end cognitoTestApp
 
 // bind to hello's auth.login event, fires when logged in okay
