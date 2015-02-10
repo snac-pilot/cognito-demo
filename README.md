@@ -46,6 +46,10 @@ grunt build gh-pages
 ### Zocial (social icons)
  * http://zocial.smcllns.com
 
+### PNotify (notifications)
+ * http://sciactive.com/pnotify/
+
+
 ### Web Stack
  * http://yeoman.io/
  * https://www.npmjs.com/package/grunt-gh-pages

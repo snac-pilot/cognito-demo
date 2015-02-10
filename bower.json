@@ -8,6 +8,7 @@
     "zocial": "*",
     "amazon-cognito-js": "https://github.com/tingletech/amazon-cognito-js.git#patch-1",
     "hello": "~1.4.1",
-    "bluebird": "~2.9.7"
+    "bluebird": "~2.9.7",
+    "pnotify": "~2.0.1"
   }
 }

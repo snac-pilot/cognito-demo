@@ -13,6 +13,9 @@
     <!-- build:css(.) styles/vendor.css -->
     <link rel="stylesheet" href="bower_components/zocial/css/zocial.css">
     <!-- bower:css -->
+    <link rel="stylesheet" href="bower_components/pnotify/pnotify.core.css" />
+    <link rel="stylesheet" href="bower_components/pnotify/pnotify.buttons.css" />
+    <link rel="stylesheet" href="bower_components/pnotify/pnotify.history.css" />
     <!-- endbower -->
     <!-- endbuild -->
 
@@ -38,7 +41,7 @@
       </div>
 
       <a id="login" class="zocial googleplus">Sign in with Google+</a>
-      <a onclick="hello.logout();location.reload();">logout</a>
+      <a id="logout" style="display: none;">logout</a>
       <div id="user_info"></div>
 
       <h2>Cognito Sync Demo</h2>
@@ -70,6 +73,13 @@
     <script src="bower_components/aws-sdk-js/dist/aws-sdk.js"></script>
     <script src="bower_components/hello/dist/hello.all.min.js"></script>
     <script src="bower_components/bluebird/js/browser/bluebird.js"></script>
+    <script src="bower_components/pnotify/pnotify.core.js"></script>
+    <script src="bower_components/pnotify/pnotify.buttons.js"></script>
+    <script src="bower_components/pnotify/pnotify.callbacks.js"></script>
+    <script src="bower_components/pnotify/pnotify.confirm.js"></script>
+    <script src="bower_components/pnotify/pnotify.desktop.js"></script>
+    <script src="bower_components/pnotify/pnotify.history.js"></script>
+    <script src="bower_components/pnotify/pnotify.nonblock.js"></script>
     <!-- endbower -->
     <!-- script src="bower_components/amazon-cognito-js/dist/amazon-cognito.min.js"></script -->
     <script src="bower_components/amazon-cognito-js/src/CognitoSyncManager.js"></script>

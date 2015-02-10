@@ -5,6 +5,7 @@
 /* global AWS */
 /* global hello */
 /* global jQuery */
+/* global PNotify */
 // aws API returns snake
 /* jshint camelcase: false */
 
@@ -43,6 +44,10 @@ var cognitoTestApp = {
             resolved.push(conflicts[i].resolveWithValue(
               remoteValue + '\n---\n' + localValue
             ));
+            new PNotify({
+              title: 'Merge Conflict',
+              text: 'remote and local have been combined'
+            });
           } else {
             resolved.push(conflicts[i].resolveWithLocalRecord());
           }
@@ -61,6 +66,10 @@ var cognitoTestApp = {
     console.log(content);
 
     cognitoTestApp.syncBack(dataset, content);
+    new PNotify({
+      title: 'Sync',
+      text: 'loaded from the cloud'
+    });
 
     // bind to the editable text area
     // trigger an event when contenteditable is changed
@@ -73,6 +82,10 @@ var cognitoTestApp = {
         // save user edits
         dataset.putAsync('MyKey', $(this).html()).then(function(record) {
           cognitoTestApp.syncBack(dataset, record.value);
+          new PNotify({
+            title: 'Sync',
+            text: 'changes saved to the cloud'
+          });
         }).done();
       }
     });
@@ -80,14 +93,20 @@ var cognitoTestApp = {
   } // end cognitoTestApp.setup
 }; // end cognitoTestApp
 
+
 // bind to hello's auth.login event, fires when logged in okay
 hello.on('auth.login', function(auth){
   // update the UI based on being logged in
   $('#login').hide();
+  $('#logout').show();
   // lookup user profile info from the identity provider
   hello( auth.network ).api( '/me' ).then( function(r){
     // inject user info
     $('#user_info').html('<img src="'+ r.thumbnail +'" /> Hey '+r.name);
+    new PNotify({
+      title: 'Welcome',
+      text: 'Thanks for logging in ' + r.name
+    });
   });
 
   // AWS config
@@ -121,6 +140,16 @@ jQuery( document ).ready(function( $ ) {
   // bind login action to login button
   $('#login').click(function(){
     hello('google').login({ response_type : 'code' });
+  });
+  $('#logout').click(function(){
+    hello.logout();
+    new PNotify({
+      title: 'Goodbye',
+      text: 'see ya soon'
+    });
+    window.setTimeout(function(){
+      location.reload();
+    }, 3000);
   });
 });
 
